@@ -84,7 +84,7 @@ const Weather = () => {
   const pollWeather = async (location) => {
     let url = 'http://api.openweathermap.org/data/2.5/weather?';
 
-    const apiKey = `process.env.REACT_APP_WEATHER_API`;
+    const apiKey = process.env.REACT_APP_WEATHER_API;
     console.log(apiKey);
 
     const params = {
@@ -97,8 +97,8 @@ const Weather = () => {
 
     const res = await fetch(url);
     if (res.ok) {
-      const weather = await res.json();
-      setWeather({ weather });
+      const weatherResponse = await res.json();
+      setWeather(weatherResponse);
     } else {
       alert('Check Weather API key!');
     }
@@ -110,7 +110,7 @@ const Weather = () => {
       (err) => console.log(err),
       { timeout: 10000 }
     );
-  });
+  }, []);
 
   let content = <div className='loading'>loading weather...</div>;
 
@@ -123,6 +123,7 @@ const Weather = () => {
       </div>
     );
   }
+
   return (
     <section className='weather-section'>
       <h1>Weather</h1>
