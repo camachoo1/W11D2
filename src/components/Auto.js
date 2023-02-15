@@ -3,7 +3,7 @@ import {
   CSSTransition,
   TransitionGroup,
 } from 'react-transition-group';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // class AutoComplete extends React.Component {
 //   constructor(props) {
@@ -117,10 +117,41 @@ import { useState, useEffect } from 'react';
 
 // export default AutoComplete;
 
-export default function AutoComplete(props) {
+function TransitionItem({ result, selectName }) {
+  const nodeRef = useRef();
+
+  return (
+    <CSSTransition
+      nodeRef={nodeRef}
+      key={result}
+      classNames='result'
+      timeout={{ enter: 500, exit: 300 }}
+    >
+      <li ref={nodeRef} className='nameLi' onClick={selectName}>
+        {result}
+      </li>
+    </CSSTransition>
+  );
+}
+
+export default function AutoComplete({ names }) {
   const [inputVal, setInputVal] = useState('');
   const [showList, setShowList] = useState(false);
   const inputRef = React.createRef();
+
+  useEffect(() => {
+    if (showList) {
+      document.addEventListener('click', handleOutsideClick);
+    } else {
+      console.log('Removing Autocomplete listener on update!');
+      document.removeEventListener('click', handleOutsideClick);
+    }
+
+    return () => {
+      console.log('Cleaning up event listener from Autocomplete!');
+      document.removeEventListener('click', handleOutsideClick);
+    };
+  }, [showList]);
 
   const handleInput = (e) => {
     setInputVal(e.target.value);
@@ -142,23 +173,8 @@ export default function AutoComplete(props) {
     else setShowList(false);
   };
 
-  useEffect(() => {
-    if (showList) {
-      document.addEventListener('click', handleOutsideClick);
-    } else {
-      console.log('Removing Autocomplete listener on update!');
-      document.removeEventListener('click', handleOutsideClick);
-    }
-
-    return () => {
-      console.log('Cleaning up event listener from Autocomplete!');
-      document.removeEventListener('click', handleOutsideClick);
-    };
-  }, [showList]);
-
   const matches = () => {
     // const { inputVal } = this.state;
-    const { names } = props; // extracts the names from the parameter props
     const inputLength = inputVal.length;
     const matches = [];
 
@@ -176,19 +192,12 @@ export default function AutoComplete(props) {
   };
 
   const results = matches().map((result) => {
-    const nodeRef = React.createRef();
-
     return (
-      <CSSTransition
-        nodeRef={nodeRef}
+      <TransitionItem
         key={result}
-        classNames='result'
-        timeout={{ enter: 500, exit: 300 }}
-      >
-        <li ref={nodeRef} className='nameLi' onClick={selectName}>
-          {result}
-        </li>
-      </CSSTransition>
+        result={result}
+        selectName={selectName}
+      />
     );
   });
 
